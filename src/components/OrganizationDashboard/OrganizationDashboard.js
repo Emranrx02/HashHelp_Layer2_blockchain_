@@ -84,9 +84,14 @@ export default function OrganizationDashboard() {
 
   const fetchPosts = async () => {
     if (!window.ethereum) return;
+
     const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const connectedAddress = await signer.getAddress();
+
     const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
-    const events = await contract.queryFilter("PostCreated");
+    const filter = contract.filters.PostCreated(connectedAddress);
+    const events = await contract.queryFilter(filter);
 
     const parsed = events.map(e => ({
       org: e.args.org,
@@ -126,7 +131,7 @@ export default function OrganizationDashboard() {
         Upload & Store
       </button>
 
-      <h3 style={{ marginTop: "2rem" }}>📜 All Posts</h3>
+      <h3 style={{ marginTop: "2rem" }}>📜 Your Posts</h3>
       {posts.length === 0 && <p>No posts yet.</p>}
       {posts.map((post, idx) => (
         <div
