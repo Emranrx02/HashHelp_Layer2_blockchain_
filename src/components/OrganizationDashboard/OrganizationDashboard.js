@@ -39,7 +39,6 @@ export default function OrganizationDashboard() {
       return;
     }
 
-    // Prepare FormData for Pinata
     const formData = new FormData();
     formData.append("file", file);
 
@@ -50,12 +49,10 @@ export default function OrganizationDashboard() {
     formData.append("pinataMetadata", metadata);
 
     try {
-      // Upload to Pinata
       const res = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
         method: "POST",
-        
         headers: {
-          Authorization: `Bearer ${process.env.REACT_APP_PINATA_JWT}`
+          Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiI4MTJkMmJlYy1hMjkxLTQ0YzYtYjA0Ny0wMTIzNmZmODU3OTAiLCJlbWFpbCI6ImVtcmFuLmh1azIwMTZAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBpbl9wb2xpY3kiOnsicmVnaW9ucyI6W3siZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiRlJBMSJ9LHsiZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiTllDMSJ9XSwidmVyc2lvbiI6MX0sIm1mYV9lbmFibGVkIjpmYWxzZSwic3RhdHVzIjoiQUNUSVZFIn0sImF1dGhlbnRpY2F0aW9uVHlwZSI6InNjb3BlZEtleSIsInNjb3BlZEtleUtleSI6Ijc4NDIwNDY0MDc4NTk1OTRhMjZkIiwic2NvcGVkS2V5U2VjcmV0IjoiYTFhYzgyOTA0MDQ2ZjQ0YjIxNTkwNDYxNWE0N2E5ZWE0NDIyYTE5ODliMjE5YTBmMjg4OWVlYzBiYzdlYWU1YyIsImV4cCI6MTc4MzU4OTkwM30.de29dvDnDwcDQLSOwbseLWeSC_nn66IjFyHaSs_gEbQ`
         },
         body: formData
       });
@@ -66,7 +63,6 @@ export default function OrganizationDashboard() {
 
       console.log("IPFS Hash:", ipfsHash);
 
-      // Call Smart Contract
       if (window.ethereum) {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
@@ -133,47 +129,47 @@ export default function OrganizationDashboard() {
       <h3 style={{ marginTop: "2rem" }}>📜 All Posts</h3>
       {posts.length === 0 && <p>No posts yet.</p>}
       {posts.map((post, idx) => (
-  <div
-    key={idx}
-    style={{
-      border: "1px solid #444",
-      padding: "1.2rem",
-      borderRadius: "8px",
-      marginBottom: "1.2rem",
-      background: "#1f1f1f",
-      color: "#ddd",
-      transition: "transform 0.2s",
-      cursor: "pointer"
-    }}
-    onMouseEnter={e => e.currentTarget.style.transform = "scale(1.02)"}
-    onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
-  >
-    <h4 style={{ margin: "0 0 0.5rem", color: "#4fc3f7" }}>✨ New Post</h4>
-    <p style={{ fontSize: "1.1rem", marginBottom: "0.8rem" }}>
-      {post.description}
-    </p>
-    <a
-      href={`https://gateway.pinata.cloud/ipfs/${post.ipfsHash}`}
-      target="_blank"
-      rel="noreferrer"
-      style={{
-        display: "inline-block",
-        marginBottom: "0.6rem",
-        padding: "0.4rem 0.8rem",
-        background: "#2196F3",
-        color: "#fff",
-        borderRadius: "4px",
-        textDecoration: "none",
-        fontWeight: "bold"
-      }}
-    >
-      📂 View IPFS IMAGE 
-    </a>
-    <p style={{ fontSize: "0.9rem", color: "#aaa" }}>
-      ⏰ {post.timestamp}
-    </p>
-  </div>
-))}
+        <div
+          key={idx}
+          style={{
+            border: "1px solid #444",
+            padding: "1.2rem",
+            borderRadius: "8px",
+            marginBottom: "1.2rem",
+            background: "#1f1f1f",
+            color: "#ddd",
+            transition: "transform 0.2s",
+            cursor: "pointer"
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.02)")}
+          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+        >
+          <h4 style={{ margin: "0 0 0.5rem", color: "#4fc3f7" }}>✨ New Post</h4>
+          <p style={{ fontSize: "1.1rem", marginBottom: "0.8rem" }}>
+            {post.description}
+          </p>
+          <a
+            href={`https://gateway.pinata.cloud/ipfs/${post.ipfsHash}`}
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              display: "inline-block",
+              marginBottom: "0.6rem",
+              padding: "0.4rem 0.8rem",
+              background: "#2196F3",
+              color: "#fff",
+              borderRadius: "4px",
+              textDecoration: "none",
+              fontWeight: "bold"
+            }}
+          >
+            📂 View IPFS IMAGE
+          </a>
+          <p style={{ fontSize: "0.9rem", color: "#aaa" }}>
+            ⏰ {post.timestamp}
+          </p>
+        </div>
+      ))}
     </div>
   );
 }
