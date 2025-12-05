@@ -3,164 +3,84 @@ import { db, storage } from "./firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-function KYCForm() {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [email, setEmail] = useState("");
-  const [nid, setNid] = useState("");
+export default function KYCForm({ account }) {
+  const [fullName, setFullName] = useState("");
+  const [country, setCountry] = useState("");
+  const [idNumber, setIdNumber] = useState("");
   const [file, setFile] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
+
+  const handleFileChange = (e) => setFile(e.target.files[0] || null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!firstName || !lastName || !mobile || !email || !nid || !file) {
-      setMessage("❌ Please fill all fields and select a file.");
-      return;
-    }
-
-    if (!/^\d{10,15}$/.test(mobile)) {
-      setMessage("❌ Mobile number must be 10-15 digits.");
-      return;
-    }
-
-    if (!/\S+@\S+\.\S+/.test(email)) {
-      setMessage("❌ Please enter a valid email address.");
-      return;
-    }
+    if (!account) return setMessage("❌ Please connect your wallet.");
+    if (!fullName || !country || !idNumber || !file) return setMessage("❌ Fill all fields and upload a file.");
+    if (!storage) return setMessage("❌ Storage not configured (set REACT_APP_FIREBASE_STORAGE_BUCKET).");
 
     try {
-      // If storage is not configured, give a clear message instead of attempting upload.
-      if (!storage) {
-        setMessage(
-          "❌ Firebase Storage not configured. Please set REACT_APP_FIREBASE_STORAGE_BUCKET in .env and restart the dev server."
-        );
-        return;
-      }
-      // include a timestamp to avoid file name collisions and make debugging easier
-      const storageRef = ref(storage, `kyc_docs/${Date.now()}_${file.name}`);
-      await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(storageRef);
+      setSubmitting(true);
+      setMessage("");
 
-      await addDoc(collection(db, "kyc_submissions"), {
-        firstName,
-        lastName,
-        mobile,
-        email,
-        nid,
-        documentURL: downloadURL,
+      const filePath = `kyc_documents/${account}/${Date.now()}_${file.name}`;
+      const fileRef = ref(storage, filePath);
+      await uploadBytes(fileRef, file);
+      const fileUrl = await getDownloadURL(fileRef);
+
+      await addDoc(collection(db, "kycSubmissions"), {
+        walletAddress: account,
+        fullName,
+        country,
+        idNumber,
+        documentUrl: fileUrl,
         status: "pending",
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
       });
 
-      setMessage("✅ Thanks for submitting your KYC. We are reviewing and will approve soon.");
-      setFirstName("");
-      setLastName("");
-      setMobile("");
-      setEmail("");
-      setNid("");
+      setMessage("✅ KYC submitted successfully. We'll review it shortly.");
+      setFullName("");
+      setCountry("");
+      setIdNumber("");
       setFile(null);
-    } catch (error) {
-      // Log full error for developer debugging and show the message to the user
-      console.error("Error submitting KYC:", error);
-      const errMsg = error && error.message ? error.message : String(error);
-      setMessage(`❌ Error submitting KYC: ${errMsg}`);
+    } catch (err) {
+      console.error("KYC submit error:", err);
+      setMessage(`❌ Failed to submit KYC: ${err && err.message ? err.message : err}`);
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <div
-      style={{
-        maxWidth: "500px",
-        margin: "30px auto",
-        padding: "25px",
-        backgroundColor: "white",
-        borderRadius: "10px",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-        color: "#333"
-      }}
-    >
-      <h3 style={{ textAlign: "center", marginBottom: "20px" }}>KYC Verification Form</h3>
+    <div style={{ maxWidth: 520, margin: "24px auto", padding: 20 }}>
+      <h3>KYC Verification Form</h3>
       <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="First Name"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-          style={inputStyle}
-        />
-        <input
-          type="text"
-          placeholder="Last Name"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-          style={inputStyle}
-        />
-        <input
-          type="text"
-          placeholder="Mobile Number"
-          value={mobile}
-          onChange={(e) => setMobile(e.target.value)}
-          style={inputStyle}
-        />
-        <input
-          type="email"
-          placeholder="Email Address"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={inputStyle}
-        />
-        <input
-          type="text"
-          placeholder="NID Number"
-          value={nid}
-          onChange={(e) => setNid(e.target.value)}
-          style={inputStyle}
-        />
-        <input
-          type="file"
-          onChange={(e) => setFile(e.target.files[0])}
-          style={{ width: "100%", marginBottom: "12px" }}
-        />
-        <button
-          type="submit"
-          style={{
-            width: "100%",
-            padding: "12px",
-            backgroundColor: "#4CAF50",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-            fontSize: "1rem"
-          }}
-        >
-          Submit KYC
+        <div style={{ marginBottom: 12, textAlign: "left" }}>
+          <label>Full Name</label>
+          <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} style={{ width: "100%", padding: 8, borderRadius: 4, border: "1px solid #ccc" }} />
+        </div>
+
+        <div style={{ marginBottom: 12, textAlign: "left" }}>
+          <label>Country</label>
+          <input type="text" value={country} onChange={(e) => setCountry(e.target.value)} style={{ width: "100%", padding: 8, borderRadius: 4, border: "1px solid #ccc" }} />
+        </div>
+
+        <div style={{ marginBottom: 12, textAlign: "left" }}>
+          <label>ID / Passport Number</label>
+          <input type="text" value={idNumber} onChange={(e) => setIdNumber(e.target.value)} style={{ width: "100%", padding: 8, borderRadius: 4, border: "1px solid #ccc" }} />
+        </div>
+
+        <div style={{ marginBottom: 12, textAlign: "left" }}>
+          <label>Upload ID Document (jpg/png/pdf)</label>
+          <input type="file" onChange={handleFileChange} />
+        </div>
+
+        <button type="submit" disabled={submitting} style={{ width: "100%", padding: 12, backgroundColor: submitting ? "#9e9e9e" : "#4caf50", color: "white", border: "none", borderRadius: 4 }}>
+          {submitting ? "Submitting..." : "Submit KYC"}
         </button>
       </form>
-      {message && (
-        <p
-          style={{
-            marginTop: "15px",
-            color: message.includes("✅") ? "green" : "red",
-            fontWeight: "bold",
-            textAlign: "center"
-          }}
-        >
-          {message}
-        </p>
-      )}
+
+      {message && <p style={{ marginTop: 12, color: message.startsWith("✅") ? "green" : "red" }}>{message}</p>}
     </div>
   );
 }
-
-const inputStyle = {
-  width: "100%",
-  marginBottom: "12px",
-  padding: "10px",
-  border: "1px solid #ccc",
-  borderRadius: "4px"
-};
-
-export default KYCForm;
