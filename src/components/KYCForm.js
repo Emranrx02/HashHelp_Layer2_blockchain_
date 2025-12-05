@@ -31,7 +31,8 @@ function KYCForm() {
     }
 
     try {
-      const storageRef = ref(storage, `kyc_docs/${file.name}`);
+      // include a timestamp to avoid file name collisions and make debugging easier
+      const storageRef = ref(storage, `kyc_docs/${Date.now()}_${file.name}`);
       await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(storageRef);
 
@@ -54,8 +55,10 @@ function KYCForm() {
       setNid("");
       setFile(null);
     } catch (error) {
+      // Log full error for developer debugging and show the message to the user
       console.error("Error submitting KYC:", error);
-      setMessage("❌ Error submitting KYC.");
+      const errMsg = error && error.message ? error.message : String(error);
+      setMessage(`❌ Error submitting KYC: ${errMsg}`);
     }
   };
 
