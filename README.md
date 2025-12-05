@@ -65,19 +65,46 @@ src/
 
 ## 🚀 Getting Started
 
-1 **Install Dependencies**
+1. Install dependencies
 
 ```bash
 npm install
+```
 
-2 Connect Wallet
-	•	MetaMask recommended
+2. Firebase environment
 
-  📄 License
+Create a `.env` file in the project root (next to `package.json`) and copy values from `.env.example`.
 
-This project is developed by Emran  for educational and demonstration purposes only.
-Do not attempt to copy, reuse, or redistribute any part of this project without explicit permission.
-Unauthorized use is strictly prohibited.
+Required keys (example):
+
+```
+REACT_APP_FIREBASE_API_KEY=AIza...YOUR_API_KEY...
+REACT_APP_FIREBASE_AUTH_DOMAIN=your-project-id.firebaseapp.com
+REACT_APP_FIREBASE_PROJECT_ID=your-project-id
+REACT_APP_FIREBASE_STORAGE_BUCKET=your-project-id.appspot.com
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=0123456789
+REACT_APP_FIREBASE_APP_ID=1:0123456789:web:abcdef123456
+REACT_APP_FIREBASE_MEASUREMENT_ID=G-XXXXXXX
+```
+
+Important: After editing `.env`, restart the dev server since Create React App reads env variables at startup.
+
+3. Start the dev server
+
+```bash
+npm run dev
+```
+
+4. Connect wallet
+
+• MetaMask recommended
+
+---
+
+📄 License
+
+This project is developed by Emran for educational and demonstration purposes only.
+Do not attempt to copy, reuse, or redistribute any part of this project without explicit permission. Unauthorized use is strictly prohibited.
 
 contract : https://emranhaque.com
 ```

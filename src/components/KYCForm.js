@@ -31,6 +31,13 @@ function KYCForm() {
     }
 
     try {
+      // If storage is not configured, give a clear message instead of attempting upload.
+      if (!storage) {
+        setMessage(
+          "❌ Firebase Storage not configured. Please set REACT_APP_FIREBASE_STORAGE_BUCKET in .env and restart the dev server."
+        );
+        return;
+      }
       // include a timestamp to avoid file name collisions and make debugging easier
       const storageRef = ref(storage, `kyc_docs/${Date.now()}_${file.name}`);
       await uploadBytes(storageRef, file);
